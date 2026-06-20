@@ -25,7 +25,6 @@ exports.getContacts = asyncHandler(async (req, res) => {
 
   const filter = { listId };
   if (search && search.trim()) {
-    // Case-insensitive partial match across name, phone and email.
     const rx = new RegExp(escapeRegex(search.trim()), 'i');
     filter.$or = [{ name: rx }, { phone: rx }, { email: rx }];
   }
@@ -57,8 +56,7 @@ exports.deleteContact = asyncHandler(async (req, res) => {
   res.json({ message: 'Contact deleted' });
 });
 
-// Escape user input before building a RegExp, so characters like "." or "+"
-// are matched literally instead of being treated as regex syntax.
+// escape user input so regex chars (. + * etc.) are matched literally
 function escapeRegex(text) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

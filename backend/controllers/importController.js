@@ -16,22 +16,20 @@ exports.importContacts = asyncHandler(async (req, res) => {
   const listExists = await List.exists({ _id: listId });
   if (!listExists) throw new ApiError(404, 'List not found');
 
-  // Record the job first so the client gets an id it can poll right away.
+  // create the job record first so we can return an id to poll
   const job = await ImportJob.create({ listId, total: contacts.length });
 
-  // Hand the heavy work off to the queue and return immediately. The worker
-  // inserts the contacts in the background; we do not block the request on it.
+  // worker does the actual inserts; respond without waiting for it
   await importQueue.add('import', {
     importJobId: job._id.toString(),
     listId,
     contacts,
   });
 
-  // 202 Accepted = "request taken, processing is not finished yet".
   res.status(202).json({ message: 'Import started', importJobId: job._id });
 });
 
-// GET /api/import/:id  — the frontend polls this to show live progress.
+// GET /api/import/:id
 exports.getImportStatus = asyncHandler(async (req, res) => {
   const job = await ImportJob.findById(req.params.id);
   if (!job) throw new ApiError(404, 'Import job not found');

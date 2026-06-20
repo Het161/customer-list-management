@@ -5,8 +5,7 @@ const connection = require('../config/redis');
 const Contact = require('../models/Contact');
 const ImportJob = require('../models/ImportJob');
 
-// The worker runs as its own process, separate from the API, so it opens its
-// own MongoDB connection.
+// separate process from the API, so it needs its own db connection
 connectDB();
 
 const worker = new Worker(
@@ -14,7 +13,6 @@ const worker = new Worker(
   async (job) => {
     const { importJobId, listId, contacts } = job.data;
 
-    // Mark the job as in-progress so the UI can reflect it immediately.
     await ImportJob.findByIdAndUpdate(importJobId, { status: 'Processing' });
 
     let inserted = 0;
@@ -22,7 +20,6 @@ const worker = new Worker(
     let failed = 0;
 
     for (const c of contacts) {
-      // Spec rule: phone is mandatory. Rows without one are counted as failed.
       if (!c.phone || !String(c.phone).trim()) {
         failed++;
         continue;
@@ -37,14 +34,12 @@ const worker = new Worker(
         });
         inserted++;
       } catch (err) {
-        // 11000 = Mongo duplicate-key error from the unique {listId, phone}
-        // index. This also catches duplicates within the same import batch.
+        // 11000 = duplicate phone in this list (also catches dupes inside the batch)
         if (err.code === 11000) duplicates++;
         else failed++;
       }
     }
 
-    // Persist the final tally and mark the job done.
     await ImportJob.findByIdAndUpdate(importJobId, {
       status: 'Completed',
       inserted,
@@ -55,8 +50,7 @@ const worker = new Worker(
   { connection }
 );
 
-// Fires if the processor function itself throws (e.g. database unreachable),
-// as opposed to a single bad contact row. Mark the whole job Failed.
+// only fires if the whole job throws (e.g. db down), not for a single bad row
 worker.on('failed', async (job, err) => {
   console.error(`Import job ${job?.id} failed:`, err.message);
   if (job?.data?.importJobId) {

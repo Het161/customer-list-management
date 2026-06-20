@@ -8,7 +8,6 @@ import * as contactsApi from '../api/contacts';
 const emptyForm = { name: '', phone: '', email: '' };
 
 export default function ContactsPage() {
-  // The :listId segment from the URL (/lists/:listId).
   const { listId } = useParams();
 
   const [list, setList] = useState(null);
@@ -21,15 +20,13 @@ export default function ContactsPage() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
-  // Load the list's name once, so we can show it in the header.
   useEffect(() => {
     getList(listId)
       .then(setList)
       .catch((err) => setError(getMessage(err)));
   }, [listId]);
 
-  // Reload contacts whenever the list or the search term changes. The 300ms
-  // timer debounces typing so we don't fire a request on every keystroke.
+  // debounce the search so we don't hit the API on every keystroke
   useEffect(() => {
     const timer = setTimeout(async () => {
       try {
@@ -43,7 +40,6 @@ export default function ContactsPage() {
       }
     }, 300);
 
-    // Cancel the pending timer if the effect re-runs before it fires.
     return () => clearTimeout(timer);
   }, [listId, search]);
 
@@ -74,7 +70,6 @@ export default function ContactsPage() {
       setModalOpen(false);
       reload();
     } catch (err) {
-      // Most likely a duplicate phone (409) — show the server's message.
       setError(getMessage(err));
     }
   };

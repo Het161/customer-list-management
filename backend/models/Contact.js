@@ -10,9 +10,7 @@ const contactSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// A phone number must be unique within a single list, but the same number is
-// allowed to appear in different lists. A compound unique index enforces that
-// at the database level, so duplicates are rejected even under concurrent writes.
+// no duplicate phone within the same list (same number can exist in other lists)
 contactSchema.index({ listId: 1, phone: 1 }, { unique: true });
 
 module.exports = mongoose.model('Contact', contactSchema);

@@ -48,7 +48,7 @@ exports.deleteList = asyncHandler(async (req, res) => {
   const list = await List.findByIdAndDelete(req.params.id);
   if (!list) throw new ApiError(404, 'List not found');
 
-  // Keep the data consistent: a list's contacts should not outlive the list.
+  // drop its contacts too so we don't leave orphans
   await Contact.deleteMany({ listId: list._id });
   res.json({ message: 'List deleted' });
 });

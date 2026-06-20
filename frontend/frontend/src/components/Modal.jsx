@@ -1,5 +1,3 @@
-// A reusable centered dialog. Clicking the dark backdrop closes it; clicking
-// the dialog itself does not (stopPropagation), so the inside stays open.
 export default function Modal({ title, onClose, children }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>

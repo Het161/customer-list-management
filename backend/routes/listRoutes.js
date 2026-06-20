@@ -8,7 +8,6 @@ const {
   deleteList,
 } = require('../controllers/listController');
 
-// Mounted at /api/lists
 router.post('/', createList);
 router.get('/', getLists);
 router.get('/:id', getList);

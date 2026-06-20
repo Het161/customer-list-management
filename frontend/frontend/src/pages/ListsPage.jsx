@@ -9,7 +9,7 @@ export default function ListsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Modal state. `editing` holds the list being edited, or null when creating.
+  // editing = the list being edited, or null when creating a new one
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ name: '', description: '' });
@@ -26,7 +26,6 @@ export default function ListsPage() {
     }
   };
 
-  // Load once when the page first mounts.
   useEffect(() => {
     loadLists();
   }, []);

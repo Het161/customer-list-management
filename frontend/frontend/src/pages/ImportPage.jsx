@@ -7,9 +7,7 @@ const SAMPLE = `Ravi Patel, 9876543210, ravi@example.com
 Neha Shah, 9123456780, neha@example.com
 Amit Joshi, 9988776655`;
 
-// Turn pasted CSV text into an array of { name, phone, email }. Each non-empty
-// line is "name, phone, email" (email optional). Done on the client so we can
-// send clean JSON to the import API.
+// one contact per line: "name, phone, email" (email optional)
 function parseCsv(text) {
   return text
     .split('\n')
@@ -28,8 +26,6 @@ export default function ImportPage() {
   const [job, setJob] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Holds the polling interval id so we can clear it when the job finishes
-  // or when the user leaves the page.
   const pollRef = useRef(null);
 
   const stopPolling = () => {
@@ -39,7 +35,7 @@ export default function ImportPage() {
     }
   };
 
-  // Clean up the interval if the component unmounts mid-import.
+  // stop polling if we leave the page mid-import
   useEffect(() => stopPolling, []);
 
   const handleFile = (e) => {
@@ -63,7 +59,7 @@ export default function ImportPage() {
       setSubmitting(true);
       const { importJobId } = await startImport(listId, contacts);
 
-      // Poll the job status every second until it is no longer running.
+      // poll status until the job is done
       pollRef.current = setInterval(async () => {
         try {
           const status = await getImportStatus(importJobId);
